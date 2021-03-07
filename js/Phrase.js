@@ -24,26 +24,25 @@ class Phrase {
    } ;
 
 
-checkLetter(letter, keyEl) {
-    console.log(keyEl)
+checkLetter(letter, keyEl, numMissed) {
+    //console.log(keyEl)
     var phraseUlAll = document.querySelector("#phrase").children[0].children ; 
-    var flag = false ;
+    var flag = undefined ;
     if (letter.length == 1) { 
         for (var i=0; i<phraseUlAll.length; i++) {
            if(phraseUlAll[i].innerText.toLowerCase() == letter) {   
-            this.showMatchedLetter(letter,i) ; // maybe I change this back and remove the showMathedLetter  
-            flag = true ;
-           } 
-         }
-         if (!flag) {
-             //this.missed += 1 ;
-             //console.log(this.missed) ;
-             keyEl.classList.add('wrong') ;
-             Game.removeLife() ; // iam calling a static method of Game
+            this.showMatchedLetter(letter,i) ; // maybe I change this back and remove the showMathedLetter, should i ?
+            flag = true ;             
            }
         }
+        if (!flag) {
+            keyEl.classList.add('wrong') ;
+            Game.removeLife(numMissed) ; // iam calling a static method of Game. Thats why iam passing numMissed through
+        } 
+    }
     return flag ;
-} ;
+}
+    
 
 
 showMatchedLetter(letter,i) {

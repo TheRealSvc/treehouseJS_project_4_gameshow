@@ -21,71 +21,138 @@ class Game {
        return this.phrases[Math.min(Math.floor(Math.random()*this.phrases.length),this.phrases.length)] ;
     }
 
-    handleInteraction() {
+    handleInteraction() { 
         var qwertyEl = document.querySelector('#qwerty') ;
+
         qwertyEl.addEventListener('click', (e) => { 
             if (e.target.className === "key") {  // this is order not to count "keyrow clicks" 
             e.target.disabled = true ; // directly disable the display-keyboard button
             console.log(`click callback called ${e.target}`)
-            this.activePhrase.checkLetter(e.target.textContent, e.target) ; // here if wrong the keyboard letter will be marked as wrong
-            } else { } ; // reminder to clean up 
+
+            if (this.activePhrase.checkLetter(e.target.textContent, e.target,this.missed)) {
+                this.missed += 0 ; // just to make it implicit 
+             } else if (!this.activePhrase.checkLetter(e.target.textContent, e.target,this.missed)) { 
+                this.missed += 1 ; 
+             }
+            } else { 
+                this.missed += 0 ; // undefined: just to make it implicit 
+            } ;  
+            console.log(`Number missed: ${this.missed}`) ;
             this.checkForWin() ;   
-        }) ;
+            e.stopImmediatePropagation(); }) ;
         
         document.addEventListener('keyup', (ee) => {
-            console.log(`keyup callback called ${ee.target}`) ;
-            if(this.keyupCount == 0) { // couldnt stop keyup event from firing twice. This is some workaround.  
-               this.keyupCount = 1 ;
-                if (/[a-z]/.test(ee.key)) { // react only when a letter (lowercase) is pressed 
+            console.log(`keyup callback called ${ee.target}`) ;  
+                if (/[a-z]/.test(ee.key)) { // react only when a letter in lowercase is pressed 
                     for(var i=0; i<qwertyEl.children.length; i++) {
                         var subEl = qwertyEl.children[i] ; 
                         for (var j=0 ; j < subEl.children.length ; j++ ) {
                          if (subEl.children[j].textContent === ee.key) {
                           subEl.children[j].disabled = true ; // this disables the display-keyboard button after keyborad input  
-                          flag = this.activePhrase.checkLetter(ee.key,subEl.children[j]) ;  // here if wrong the keyboard letter will be marked as wrong
-                          break ;
+                          if (this.activePhrase.checkLetter(ee.key,subEl.children[j],this.missed)) {
+                               this.missed += 0 ; //  just to make it implicit 
+                            } else if (!this.activePhrase.checkLetter(ee.key,subEl.children[j],this.missed)) { 
+                               this.missed += 1 ; 
+                            } else {
+                               this.missed += 0 ; // undefined: just to make it implicit 
+                            } 
                          }
                      }                      
-                 } 
-                }
-            } else { 
-                this.keyupCount = 0 ; 
+                 }   
             } 
+            console.log(`Number missed: ${this.missed}`) ;
             this.checkForWin() ;
-            console.log(this.missed) ;
+            //ee.stopImmediatePropagation(); 
         }) ; 
     }  
 
-    static removeLife() {
+
+    static removeLife(numMissed) {
+        console.log(`number missed in remove life: ${numMissed}`)
         var heartsOl = document.querySelector("#scoreboard").children[0] ; 
-        for (var i=heartsOl.children.length-1; i >= 0; i-=1) { // replace right heart first 
+        for (var i=heartsOl.children.length-1 ; i >= (4-numMissed) ; i-=1) { // replace right heart first 
             var heartsImg = heartsOl.children[i].children ;
             if (/live/.test(heartsImg[0].outerHTML)) {
                 heartsImg[0].outerHTML = '<img src="images/lostHeart.png" alt="Heart Icon" height="35" width="30">' ;
-                break ;
             }
         }
-        //this.missed += 1 ; 
-        //console.log(`missed is ${this.missed}`);
     } 
 
     checkForWin() {
-        if (this.missed>=5 ) { 
-            this.gameOver() ;
-        } 
-    }; 
+        var winLoseFlag = false ; //  false means winning
+        
+        if (this.missed >= 5) { 
+             winLoseFlag = true ; // true means loosing ;-)  
+             this.gameOver(winLoseFlag)
+             return  // no need to further evaluate  
+            }; 
+        
+        var phraseUlAll = document.querySelector("#phrase").children[0].children ; 
+        for (var i=0; i<phraseUlAll.length ; i++ ) {
+            if (!phraseUlAll[i].classList.contains('chosen') && !phraseUlAll[i].classList.contains('space') )   { 
+                winLoseFlag = "nothing" ; // undefined means neither winning nor loosing 
+                break ;
+            } else {
+                winLoseFlag = winLoseFlag || false  ;  // after the loop winLoseFlag is false only if all letters contain "chosen" class 
+                if (winLoseFlag) {
+                    winLoseFlag = "nothing" ;
+                    break ;
+                }    
+            }        
+        }    // false means winning
+    this.gameOver(winLoseFlag)
+    }
+ 
+
 
  /*
  Includes gameOver() method that displays a final "win" or "loss" message by showing the original start screen
 overlay styled with either the win or lose CSS class
  */
-    gameOver() {
-        const gameSection = document.querySelector('#overlay') ;
-        gameSection.style.display = 'block' ;
-        if(this.missed >=5) {
+    gameOver(winLoseFlag) {
+        if(winLoseFlag && winLoseFlag !="nothing") {  // lost 
+            const gameSection = document.querySelector('#overlay') ;
+            gameSection.style.display = 'block' ;
             console.log("you lost !!!!!!! ") ;
-            location.reload() ;
-        } 
+            const h1El = document.getElementById("game-over-message") ;
+            console.log(h1El) ;
+            h1El.innerText = "Ups, you lost !" ;
+            this.resetToOriginal() ;
+        } else if (!winLoseFlag && winLoseFlag !="nothing") { // won
+            const gameSection = document.querySelector('#overlay') ;
+            gameSection.style.display = 'block' ;
+            console.log("Congatulations... you won ...tadaaaa !!!!!!! ") ;
+            const h1El = document.getElementById("game-over-message") ;
+            console.log(h1El) ;
+            h1El.innerText = "Congatulations... you won ...tadaaaa !!!!!!! " ;
+            this.resetToOriginal() ;
+
+        }  else if (winLoseFlag === "nothing") {}  // nothing does nothing
     } ;
+
+
+    resetToOriginal() {
+        //reset hearts 
+        var heartsOl = document.querySelector("#scoreboard").children[0] ; 
+        for (var i=heartsOl.children.length-1; i >= 0; i-=1) { // replace right heart first 
+         var heartsImg = heartsOl.children[i].children ;
+             heartsImg[0].outerHTML = '<img src="images/liveHeart.png" alt="Heart Icon" height="35" width="30">' ;
+        }
+
+        // re-enable keys and remove wrong class attribute
+        var qwertyEl = document.querySelector('#qwerty') ;  
+        for(var i=0; i<qwertyEl.children.length; i++) {
+            var subEl = qwertyEl.children[i] ; 
+            for (var j=0 ; j < subEl.children.length ; j++ ) {
+                subEl.children[j].disabled = false  ; // this disables the display-keyboard button after keyborad input  
+                subEl.children[j].classList.remove('wrong') ;
+                subEl.children[j].classList.remove('chosen') ;
+            }
+        }                      
+        // remove phrase list items
+        var phraseUl = document.querySelector("#phrase").children[0];
+        phraseUl.innerHTML = '' ;
+        this.missed = 0 ; 
+    };
 
 }
