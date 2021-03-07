@@ -3,6 +3,7 @@
  * Game.js */
 
 
+
 class Game {
     constructor(phrases) {
         this.phrases = phrases ;
@@ -99,7 +100,7 @@ class Game {
                     break ;
                 }    
             }        
-        }    // false means winning
+        }    
     this.gameOver(winLoseFlag)
     }
  
