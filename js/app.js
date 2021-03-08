@@ -2,6 +2,9 @@
  * Project 4 - OOP Game App
  * app.js */
 
+/**
+ * callback function to initialize the game 
+ */
 function letsStart() {
     gameObj = new Game(phrases) ; 
     gameObj.startGame() ; 
@@ -10,8 +13,8 @@ function letsStart() {
 
 const startButton = document.querySelector("#btn__reset") ;
 
+// event listener to start the game 
 startButton.addEventListener('click', (e) => { 
-//e.preventDefault() ;
 letsStart() ;  
 e.stopImmediatePropagation() ;
 },false) ;

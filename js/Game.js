@@ -3,15 +3,23 @@
  * Game.js */
 
 
-
+/**
+ * The Game class is the main class. It only contains three variables
+ * @param phrases as the array of phrases as created in Data.js. Thats the only param the contructor requires 
+ * @param missed holding the number missed letter guesses
+ * @param activePhrase holding a Phrase object representing the active phrase
+ */
 class Game {
     constructor(phrases) {
         this.phrases = phrases ;
         this.missed = 0 ;
         this.activePhrase = new Phrase(this.getRandomPhrase()) ;
-        this.keyupCount = 0 ;
     }
 
+    /**
+     *  removes the start screen and dispays the active phrase. 
+     *  This callback is called when clicking the start button 
+     *  */
     startGame(phrases=this.phrases) {
         const gameSection = document.querySelector('#overlay') ;
         gameSection.style.display = 'none' ;
@@ -22,9 +30,13 @@ class Game {
        return this.phrases[Math.min(Math.floor(Math.random()*this.phrases.length),this.phrases.length)] ;
     }
 
+    /**
+     * main method to handle both click and keyup events
+     */
     handleInteraction() { 
         var qwertyEl = document.querySelector('#qwerty') ;
-
+        // Reminder for refactoring at a later point in time: Try to use one event delegator callback
+        // to hande both mouse clicks and keyboard events     
         qwertyEl.addEventListener('click', (e) => { 
             if (e.target.className === "key") {  // this is order not to count "keyrow clicks" 
             e.target.disabled = true ; // directly disable the display-keyboard button
@@ -61,15 +73,17 @@ class Game {
                      }                      
                  }   
             } 
-            console.log(`Number missed: ${this.missed}`) ;
             this.checkForWin() ;
             //ee.stopImmediatePropagation(); 
         }) ; 
     }  
 
-
+    /**
+     * replaces one liveHeart with a lostHeart
+     * It is a static methd to be called from a Phrase class object, hence it doesnt change
+     * the state of the game object 
+     *  */ 
     static removeLife(numMissed) {
-        console.log(`number missed in remove life: ${numMissed}`)
         var heartsOl = document.querySelector("#scoreboard").children[0] ; 
         for (var i=heartsOl.children.length-1 ; i >= (4-numMissed) ; i-=1) { // replace right heart first 
             var heartsImg = heartsOl.children[i].children ;
@@ -79,6 +93,10 @@ class Game {
         }
     } 
 
+    /**
+     *  checkForWin checks both for winning and loosing 
+     *  the return value indicates wether game was "won" or "lost" or "nothing"  
+     * */ 
     checkForWin() {
         var winLoseFlag = false ; //  false means winning
         
@@ -106,32 +124,34 @@ class Game {
  
 
 
- /*
- Includes gameOver() method that displays a final "win" or "loss" message by showing the original start screen
-overlay styled with either the win or lose CSS class
+/**
+ * Is called when the game is over either by winning or losing. 
+ * @param winLoseFlag comes from the checkForEin function. Based on this different screens are presented
  */
     gameOver(winLoseFlag) {
         if(winLoseFlag && winLoseFlag !="nothing") {  // lost 
             const gameSection = document.querySelector('#overlay') ;
+            gameSection.classList.add('lose') ;    
             gameSection.style.display = 'block' ;
-            console.log("you lost !!!!!!! ") ;
             const h1El = document.getElementById("game-over-message") ;
-            console.log(h1El) ;
-            h1El.innerText = "Ups, you lost !" ;
+            h1El.innerText = `Ups, you lost !!! \n The correct phrase was: \n  ${this.activePhrase.phrase}` ;
             this.resetToOriginal() ;
         } else if (!winLoseFlag && winLoseFlag !="nothing") { // won
             const gameSection = document.querySelector('#overlay') ;
+            document.documentElement.style.setProperty("--color-win", "#green"); // here i change the css win color
+            gameSection.classList.add('win') ; 
             gameSection.style.display = 'block' ;
-            console.log("Congatulations... you won ...tadaaaa !!!!!!! ") ;
             const h1El = document.getElementById("game-over-message") ;
-            console.log(h1El) ;
             h1El.innerText = "Congatulations... you won ...tadaaaa !!!!!!! " ;
             this.resetToOriginal() ;
 
         }  else if (winLoseFlag === "nothing") {}  // nothing does nothing
     } ;
 
-
+/**
+ * resetToOriginal resets the state of the DOM, since reinstantiating the Game object 
+ * is not doing this.
+ */
     resetToOriginal() {
         //reset hearts 
         var heartsOl = document.querySelector("#scoreboard").children[0] ; 

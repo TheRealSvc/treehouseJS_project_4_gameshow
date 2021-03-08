@@ -1,3 +1,4 @@
+// add new/other phrases here 
 var phrases = [] ;
 phrases.push("Break a leg");
 phrases.push("Against all odds") ;  
