@@ -40,8 +40,6 @@ class Game {
         qwertyEl.addEventListener('click', (e) => { 
             if (e.target.className === "key") {  // this is order not to count "keyrow clicks" 
             e.target.disabled = true ; // directly disable the display-keyboard button
-            console.log(`click callback called ${e.target}`)
-
             if (this.activePhrase.checkLetter(e.target.textContent, e.target,this.missed)) {
                 this.missed += 0 ; // just to make it implicit 
              } else if (!this.activePhrase.checkLetter(e.target.textContent, e.target,this.missed)) { 
@@ -50,13 +48,11 @@ class Game {
             } else { 
                 this.missed += 0 ; // undefined: just to make it implicit 
             } ;  
-            console.log(`Number missed: ${this.missed}`) ;
             this.checkForWin() ;   
             e.stopImmediatePropagation(); }) ;
         
-        document.addEventListener('keyup', (ee) => {
-            console.log(`keyup callback called ${ee.target}`) ;  
-                if (/[a-z]/.test(ee.key)) { // react only when a letter in lowercase is pressed 
+        document.addEventListener('keyup', (ee) => { 
+                if (/[a-z]/.test(ee.key)) { // react only when a letter in lowercase is pressed (omit the space in between)
                     for(var i=0; i<qwertyEl.children.length; i++) {
                         var subEl = qwertyEl.children[i] ; 
                         for (var j=0 ; j < subEl.children.length ; j++ ) {
@@ -74,7 +70,7 @@ class Game {
                  }   
             } 
             this.checkForWin() ;
-            //ee.stopImmediatePropagation(); 
+            ee.stopImmediatePropagation(); 
         }) ; 
     }  
 
@@ -107,6 +103,7 @@ class Game {
             }; 
         
         var phraseUlAll = document.querySelector("#phrase").children[0].children ; 
+        if (phraseUlAll.length == 0) {return "nothing"} // i added this to fix a "lost screen" issue. Without it the lose screen switches to win on keyup. 
         for (var i=0; i<phraseUlAll.length ; i++ ) {
             if (!phraseUlAll[i].classList.contains('chosen') && !phraseUlAll[i].classList.contains('space') )   { 
                 winLoseFlag = "nothing" ; // undefined means neither winning nor loosing 
@@ -131,15 +128,15 @@ class Game {
     gameOver(winLoseFlag) {
         if(winLoseFlag && winLoseFlag !="nothing") {  // lost 
             const gameSection = document.querySelector('#overlay') ;
-            gameSection.classList.add('lose') ;    
+            gameSection.className = 'lose' ;    
             gameSection.style.display = 'block' ;
             const h1El = document.getElementById("game-over-message") ;
-            h1El.innerText = `Ups, you lost !!! \n The correct phrase was: \n  ${this.activePhrase.phrase}` ;
+            h1El.innerText = `Ups, you lost !!! \n The correct phrase was: \n  ${this.activePhrase.phrase}` ; // if lost active phrase is displayed
             this.resetToOriginal() ;
         } else if (!winLoseFlag && winLoseFlag !="nothing") { // won
             const gameSection = document.querySelector('#overlay') ;
-            document.documentElement.style.setProperty("--color-win", "#green"); // here i change the css win color
-            gameSection.classList.add('win') ; 
+            document.documentElement.style.setProperty("--color-win", "green"); // here i change the css win color 
+            gameSection.className = 'win' ; 
             gameSection.style.display = 'block' ;
             const h1El = document.getElementById("game-over-message") ;
             h1El.innerText = "Congatulations... you won ...tadaaaa !!!!!!! " ;

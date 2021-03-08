@@ -188,7 +188,7 @@ button {
 }
 
 .win {
-  background-color: var(--color-win, lightgreen);
+  background-color: var(--color-win);
 }
 
 .win a {
