@@ -31,39 +31,30 @@ class Phrase {
    } ;
 
 /**    
- * checkLetter method check if letter is in phrase and handles 
- * @param letter the clckes or pressed letter
- * @param keyEl the Element that refers to the displayed keyboard
- * @param numMissed number missed 
- * @returns  flag true (hit) or undefined (else) 
  */
-    checkLetter(letter, keyEl, numMissed) {
+    checkLetter(letter) {
         var phraseUlAll = document.querySelector("#phrase").children[0].children ; 
-        var flag = undefined ;
+        var flag = false ;
          if (letter.length == 1) { 
             for (var i=0; i<phraseUlAll.length; i++) {
                if(phraseUlAll[i].innerText.toLowerCase() == letter) {   
-                this.showMatchedLetter(letter,i) ; // maybe I should change this back and remove the showMathedLetter, should i ?
                 flag = true ;             
              }
          }
-         if (!flag) {
-            keyEl.classList.add('wrong') ;
-            Game.removeLife(numMissed) ; // iam calling a static method of Game. Thats why iam passing numMissed through
-        } 
+        }
+        return flag ;
     }
-    return flag ;
-}
     
 
-/**
- * indicate the keyboard letter in case of hitting a correct key 
- * @param  letter the letter  
- * @param  i integer as reference to the keyborad button
- */
-showMatchedLetter(letter,i) {
-    var phraseUlAll = document.querySelector("#phrase").children[0].children ; 
-    phraseUlAll[i].classList.add('chosen') ;           
-}
-
+    /**  
+    */
+    showMatchedLetter(keySelected) {
+     var phraseUl = document.querySelector("#phrase").children[0] ;
+     for (let i=0 ; i < this.phrase.length ; i++) {
+            if(phraseUl[i].children.classList.contains(keySelected)) { 
+                    phraseUl[i].children.classList.remove('hide') 
+                    phraseUl[i].children.classList.add('show')                  
+            }
+        }
+    }
 } // end of class 
