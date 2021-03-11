@@ -3,6 +3,7 @@
  * Game.js */
 
 
+
 /**
  * The Game class is the main class. It only contains three variables
  * @param phrases as the array of phrases as created in Data.js. Thats the only param the contructor requires 
@@ -13,7 +14,7 @@ class Game {
     constructor(phrases) {
         this.phrases = phrases ;
         this.missed = 0 ;
-        this.activePhrase = new Phrase(this.getRandomPhrase()) ;
+        this.activePhrase = null ;// new Phrase(this.getRandomPhrase()) ;
     }
 
     /**
@@ -23,7 +24,6 @@ class Game {
     startGame(phrases=this.phrases) {
         const gameSection = document.querySelector('#overlay') ;
         gameSection.style.display = 'none' ;
-        this.missed = 0 ;    
     } ;
     
     getRandomPhrase() {
@@ -39,19 +39,23 @@ class Game {
         // to hande both mouse clicks and keyboard events     
         qwertyEl.addEventListener('click', (e) => { 
             if (e.target.className === "key") {  // this is order not to count "keyrow clicks" 
-            e.target.disabled = true ; // directly disable the display-keyboard button
-            if (this.activePhrase.checkLetter(e.target.textContent, e.target,this.missed)) {
-                this.missed += 0 ; // just to make it implicit 
-             } else if (!this.activePhrase.checkLetter(e.target.textContent, e.target,this.missed)) { 
-                this.missed += 1 ; 
-             }
-            } else { 
-                this.missed += 0 ; // undefined: just to make it implicit 
-            } ;  
-            this.checkForWin() ;   
-            e.stopImmediatePropagation(); }) ;
+                e.target.disabled = true ; // directly disable the display-keyboard button
+                if (!this.activePhrase.checkLetter(e.target.textContent)) { //}, e.target)) {
+                    e.target.classList.add('wrong') ;
+                    this.removeLife() ;
+                } else {
+                    e.target.classList.add('chosen') ;
+                    this.activePhrase.showMatchedLetter(e.target.textContent) ;
+                    if(this.checkForWin()) { 
+                        this.gameOver() ;
+                    } ;   
+                }
+            }
+        }  
+    }      
+            //e.stopImmediatePropagation(); }) ;
         
-        document.addEventListener('keyup', (ee) => { 
+       /* document.addEventListener('keyup', (ee) => { 
                 if (/[a-z]/.test(ee.key)) { // react only when a letter in lowercase is pressed (omit the space in between)
                     for(var i=0; i<qwertyEl.children.length; i++) {
                         var subEl = qwertyEl.children[i] ; 
@@ -71,21 +75,25 @@ class Game {
             } 
             this.checkForWin() ;
             ee.stopImmediatePropagation(); 
-        }) ; 
-    }  
+        }) ; */
+      
 
     /**
      * replaces one liveHeart with a lostHeart
      * It is a static methd to be called from a Phrase class object, hence it doesnt change
      * the state of the game object 
      *  */ 
-    static removeLife(numMissed) {
+    removeLife() {
+        this.missed += 1 ;
         var heartsOl = document.querySelector("#scoreboard").children[0] ; 
-        for (var i=heartsOl.children.length-1 ; i >= (4-numMissed) ; i-=1) { // replace right heart first 
+        for (var i=heartsOl.children.length-1 ; i >= (4-this.missed) ; i-=1) { // replace right heart first 
             var heartsImg = heartsOl.children[i].children ;
             if (/live/.test(heartsImg[0].outerHTML)) {
                 heartsImg[0].outerHTML = '<img src="images/lostHeart.png" alt="Heart Icon" height="35" width="30">' ;
             }
+        }
+        if (this.missed==5) {
+            this.gameOver() ;
         }
     } 
 
@@ -93,47 +101,39 @@ class Game {
      *  checkForWin checks both for winning and loosing 
      *  the return value indicates wether game was "won" or "lost" or "nothing"  
      * */ 
-    checkForWin() {
-        var winLoseFlag = false ; //  false means winning
-        
-        if (this.missed >= 5) { 
-             winLoseFlag = true ; // true means loosing ;-)  
-             this.gameOver(winLoseFlag)
-             return  // no need to further evaluate  
-            }; 
-        
+    checkForWin() {  
+        winLoseFlag = false ; // false means "no win", true means "win"     
         var phraseUlAll = document.querySelector("#phrase").children[0].children ; 
-        if (phraseUlAll.length == 0) {return "nothing"} // i added this to fix a "lost screen" issue. Without it the lose screen switches to win on keyup. 
-        for (var i=0; i<phraseUlAll.length ; i++ ) {
+        //if (phraseUlAll.length == 0) { 
+        //    return false 
+        //} // i added this to fix a "lost screen" issue. Without it the lose screen switches to win on keyup. 
+        
+        for (var i=0; i < phraseUlAll.length ; i++ ) {
             if (!phraseUlAll[i].classList.contains('chosen') && !phraseUlAll[i].classList.contains('space') )   { 
-                winLoseFlag = "nothing" ; // undefined means neither winning nor loosing 
-                break ;
+                return false ;
             } else {
                 winLoseFlag = winLoseFlag || false  ;  // after the loop winLoseFlag is false only if all letters contain "chosen" class 
                 if (winLoseFlag) {
-                    winLoseFlag = "nothing" ;
-                    break ;
+                    return true ;
                 }    
             }        
-        }    
-    this.gameOver(winLoseFlag)
+        }
     }
- 
 
 
 /**
  * Is called when the game is over either by winning or losing. 
  * @param winLoseFlag comes from the checkForEin function. Based on this different screens are presented
  */
-    gameOver(winLoseFlag) {
-        if(winLoseFlag && winLoseFlag !="nothing") {  // lost 
+    gameOver() {
+        if(this.missed==5) {  // lost 
             const gameSection = document.querySelector('#overlay') ;
             gameSection.className = 'lose' ;    
             gameSection.style.display = 'block' ;
             const h1El = document.getElementById("game-over-message") ;
             h1El.innerText = `Ups, you lost !!! \n The correct phrase was: \n  ${this.activePhrase.phrase}` ; // if lost active phrase is displayed
             this.resetToOriginal() ;
-        } else if (!winLoseFlag && winLoseFlag !="nothing") { // won
+        } else { // won
             const gameSection = document.querySelector('#overlay') ;
             document.documentElement.style.setProperty("--color-win", "green"); // here i change the css win color 
             gameSection.className = 'win' ; 
@@ -141,9 +141,7 @@ class Game {
             const h1El = document.getElementById("game-over-message") ;
             h1El.innerText = "Congatulations... you won ...tadaaaa !!!!!!! " ;
             this.resetToOriginal() ;
-
-        }  else if (winLoseFlag === "nothing") {}  // nothing does nothing
-    } ;
+    } 
 
 /**
  * resetToOriginal resets the state of the DOM, since reinstantiating the Game object 
@@ -156,7 +154,6 @@ class Game {
          var heartsImg = heartsOl.children[i].children ;
              heartsImg[0].outerHTML = '<img src="images/liveHeart.png" alt="Heart Icon" height="35" width="30">' ;
         }
-
         // re-enable keys and remove wrong class attribute
         var qwertyEl = document.querySelector('#qwerty') ;  
         for(var i=0; i<qwertyEl.children.length; i++) {
@@ -171,6 +168,6 @@ class Game {
         var phraseUl = document.querySelector("#phrase").children[0];
         phraseUl.innerHTML = '' ;
         this.missed = 0 ; 
-    };
+    } ;
+}}
 
-}

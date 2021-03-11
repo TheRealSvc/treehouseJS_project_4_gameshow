@@ -9,7 +9,7 @@
  */
 class Phrase {
     constructor(phrase) {
-        this.phrase=phrase ;
+        this.phrase=phrase.toLowerCase() ;
         this.addPhraseToDisplay() ;
     }
 
