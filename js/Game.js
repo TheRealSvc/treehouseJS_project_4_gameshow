@@ -12,7 +12,7 @@
  */
 class Game {
     constructor(phrases) {
-        this.phrases = phrases ;
+        this.phrases = phrases ; 
         this.missed = 0 ;
         this.activePhrase = null ;// new Phrase(this.getRandomPhrase()) ;
     }
@@ -21,10 +21,13 @@ class Game {
      *  removes the start screen and dispays the active phrase. 
      *  This callback is called when clicking the start button 
      *  */
-    startGame(phrases=this.phrases) {
+    startGame() {
         const gameSection = document.querySelector('#overlay') ;
         gameSection.style.display = 'none' ;
+        this.activePhrase = new Phrase(this.getRandomPhrase()) ;
+        console.log(this.activePhrase);
     } ;
+
     
     getRandomPhrase() {
        return this.phrases[Math.min(Math.floor(Math.random()*this.phrases.length),this.phrases.length)] ;
@@ -35,26 +38,29 @@ class Game {
      */
     handleInteraction() { 
         var qwertyEl = document.querySelector('#qwerty') ;
-        // Reminder for refactoring at a later point in time: Try to use one event delegator callback
-        // to hande both mouse clicks and keyboard events     
         qwertyEl.addEventListener('click', (e) => { 
             if (e.target.className === "key") {  // this is order not to count "keyrow clicks" 
                 e.target.disabled = true ; // directly disable the display-keyboard button
                 if (!this.activePhrase.checkLetter(e.target.textContent)) { //}, e.target)) {
                     e.target.classList.add('wrong') ;
                     this.removeLife() ;
+                    e.preventDefault() ;
+                    e.stopImmediatePropagation() ;
                 } else {
                     e.target.classList.add('chosen') ;
+                    console.log(`here: letter is  ${e.target.textContent}`)
                     this.activePhrase.showMatchedLetter(e.target.textContent) ;
                     if(this.checkForWin()) { 
-                        this.gameOver() ;
+                        this.gameOver() ; // display win screen
+                        e.preventDefault() ;
+                        e.stopImmediatePropagation() ;
                     } ;   
                 }
             }
-        }  
-    }      
-            //e.stopImmediatePropagation(); }) ;
-        
+        }) 
+    }
+
+    // iam not going for exceed but keep this as reference just in case :-)    
        /* document.addEventListener('keyup', (ee) => { 
                 if (/[a-z]/.test(ee.key)) { // react only when a letter in lowercase is pressed (omit the space in between)
                     for(var i=0; i<qwertyEl.children.length; i++) {
@@ -79,12 +85,9 @@ class Game {
       
 
     /**
-     * replaces one liveHeart with a lostHeart
-     * It is a static methd to be called from a Phrase class object, hence it doesnt change
-     * the state of the game object 
-     *  */ 
+    * replaces one liveHeart with a lostHeart and call gameOver if missed==5
+    * */ 
     removeLife() {
-        this.missed += 1 ;
         var heartsOl = document.querySelector("#scoreboard").children[0] ; 
         for (var i=heartsOl.children.length-1 ; i >= (4-this.missed) ; i-=1) { // replace right heart first 
             var heartsImg = heartsOl.children[i].children ;
@@ -92,6 +95,7 @@ class Game {
                 heartsImg[0].outerHTML = '<img src="images/lostHeart.png" alt="Heart Icon" height="35" width="30">' ;
             }
         }
+        this.missed += 1 ;
         if (this.missed==5) {
             this.gameOver() ;
         }
@@ -102,28 +106,19 @@ class Game {
      *  the return value indicates wether game was "won" or "lost" or "nothing"  
      * */ 
     checkForWin() {  
-        winLoseFlag = false ; // false means "no win", true means "win"     
+        var winLoseFlag = false ; // false means "no win", true means "win"     
         var phraseUlAll = document.querySelector("#phrase").children[0].children ; 
-        //if (phraseUlAll.length == 0) { 
-        //    return false 
-        //} // i added this to fix a "lost screen" issue. Without it the lose screen switches to win on keyup. 
-        
+  
         for (var i=0; i < phraseUlAll.length ; i++ ) {
-            if (!phraseUlAll[i].classList.contains('chosen') && !phraseUlAll[i].classList.contains('space') )   { 
-                return false ;
-            } else {
-                winLoseFlag = winLoseFlag || false  ;  // after the loop winLoseFlag is false only if all letters contain "chosen" class 
-                if (winLoseFlag) {
-                    return true ;
-                }    
+            if (!phraseUlAll[i].classList.contains('show') && !phraseUlAll[i].classList.contains('space') )   { 
+                return false ;    
             }        
         }
+        return true ;
     }
-
 
 /**
  * Is called when the game is over either by winning or losing. 
- * @param winLoseFlag comes from the checkForEin function. Based on this different screens are presented
  */
     gameOver() {
         if(this.missed==5) {  // lost 
@@ -141,7 +136,8 @@ class Game {
             const h1El = document.getElementById("game-over-message") ;
             h1El.innerText = "Congatulations... you won ...tadaaaa !!!!!!! " ;
             this.resetToOriginal() ;
-    } 
+        } 
+    }
 
 /**
  * resetToOriginal resets the state of the DOM, since reinstantiating the Game object 
@@ -169,5 +165,5 @@ class Game {
         phraseUl.innerHTML = '' ;
         this.missed = 0 ; 
     } ;
-}}
+}
 

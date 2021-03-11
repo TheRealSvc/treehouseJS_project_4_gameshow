@@ -30,8 +30,9 @@ class Phrase {
     } 
    } ;
 
-/**    
- */
+    /**
+    *   checks if selected letter is in the phrase  
+    */
     checkLetter(letter) {
         var phraseUlAll = document.querySelector("#phrase").children[0].children ; 
         var flag = false ;
@@ -46,14 +47,15 @@ class Phrase {
     }
     
 
-    /**  
+    /**
+    * displays the matched letter in the phrase   
     */
     showMatchedLetter(keySelected) {
      var phraseUl = document.querySelector("#phrase").children[0] ;
-     for (let i=0 ; i < this.phrase.length ; i++) {
-            if(phraseUl[i].children.classList.contains(keySelected)) { 
-                    phraseUl[i].children.classList.remove('hide') 
-                    phraseUl[i].children.classList.add('show')                  
+     for (let i=0 ; i < phraseUl.children.length ; i++) {
+            if(phraseUl.children[i].classList.contains(keySelected)) { 
+                    phraseUl.children[i].classList.remove('hide') 
+                    phraseUl.children[i].classList.add('show')                  
             }
         }
     }
