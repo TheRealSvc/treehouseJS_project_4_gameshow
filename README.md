@@ -55,14 +55,13 @@ Reset all of the heart images (i.e. the player's lives) in the scoreboard at the
 
 
 
-## Plus ... 
-### 1) Keyup listener 
-I added a keyup listener to use the keyboard alternatively to the displayed keyboard. Both work and both methods can be used interchangingly. 
+## Plus ... (i dont go for exceed)
 
-### 2) some -very little- bonus 
+###  some -very little- bonus 
 The win gets a color as set by a css variable   
 win {
   background-color: var(--color-win);
 }
 In the Game.js code in the gamOver() method i set this property using document.documentElement.style.setProperty("--color-win", "green");
 
+I display the phrase in case of "lost" 
