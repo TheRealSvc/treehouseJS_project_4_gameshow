@@ -9,10 +9,13 @@
  * @param phrases as the array of phrases as created in Data.js. Thats the only param the contructor requires 
  * @param missed holding the number missed letter guesses
  * @param activePhrase holding a Phrase object representing the active phrase
- */
+ */ 
 class Game {
     constructor(phrases) {
-        this.phrases = phrases ; 
+        this.phrases = []
+        for (var i=0; i<5; i++) {
+            this.phrases.push(new Phrase(phrases[i])) ; // now this is an array of phrase objects
+        } 
         this.missed = 0 ;
         this.activePhrase = null ;// new Phrase(this.getRandomPhrase()) ;
     }
@@ -24,7 +27,8 @@ class Game {
     startGame() {
         const gameSection = document.querySelector('#overlay') ;
         gameSection.style.display = 'none' ;
-        this.activePhrase = new Phrase(this.getRandomPhrase()) ;
+        this.activePhrase = this.getRandomPhrase(this.phrases) ;
+        this.activePhrase.addPhraseToDisplay() ;
         console.log(this.activePhrase);
     } ;
 
